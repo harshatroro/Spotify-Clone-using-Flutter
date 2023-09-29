@@ -8,7 +8,6 @@ class Track {
   String id;
   String imageUrl;
   String name;
-  int popularity;
   String type;
 
   Track({
@@ -18,21 +17,25 @@ class Track {
     required this.id,
     required this.imageUrl,
     required this.name,
-    required this.popularity,
     required this.type,
   });
 
   Track.fromJson(Map<String, dynamic> json)
   : album = Album.fromJson(json["album"]),
-    artists = List<Artist>.from(
-      json["artists"].map(
-        (x) => Artist.fromJson(x)
-      )
-    ),
+    artists = List<Artist>.from(json["artists"].map((x) => Artist.fromJson(x))),
     durationMs = json["duration_ms"],
     id = json["id"],
     imageUrl = json["album"]["images"][0]["url"],
     name = json["name"],
-    popularity = json["popularity"],
-    type = json["type"];
+    type = "Track";
+
+  Map<String, dynamic> toJson() => {
+    "album": album,
+    "artists": artists,
+    "duration_ms": durationMs,
+    "id": id,
+    "image_url": imageUrl,
+    "name": name,
+    "type": type,
+  };
 }

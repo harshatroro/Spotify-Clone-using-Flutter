@@ -26,10 +26,6 @@ dependencies:
 
   riverpod_annotation: ^2.1.6
 
-  sqfentity: ^2.4.0
-
-  sqfentity_gen: ^2.4.0
-
 dev_dependencies:
 
   flutter_test:
@@ -49,3 +45,7 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+  assets:
+
+    - lib/.env

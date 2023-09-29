@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:spotify_clone/models/album.dart';
 import 'package:spotify_clone/models/artist.dart';
 import 'package:spotify_clone/models/track.dart';
@@ -13,33 +12,56 @@ class Repository {
 
   Future<Map<String, dynamic>> search(String query) async {
     Map<String, dynamic> results = <String, dynamic>{
-      "artists": null,
-      "albums": null,
-      "tracks": null,
+      "response": {
+        "albums": List<Album>.empty(growable: true),
+        "artists": List<Artist>.empty(growable: true),
+        "tracks": List<Track>.empty(growable: true),
+      },
       "error": null,
     };
     final response = await spotifyService.search(query);
     if (response["response"] != null) {
-      if (response["artists"] != null) {
-        results["artists"] = List<Artist>.empty(growable: true);
-        for (String artist in response["response"]["artists"]["items"]) {
-          results["artists"].add(Artist.fromJson(jsonDecode(artist)));
-        }
+      if (response["response"]["albums"] != null) {
+        results["response"].update("albums", (value) => createAlbumsFromJsonData(response["response"]["albums"]["items"]));
       }
-      if (response["albums"] != null) {
-        results["albums"] = List<Album>.empty(growable: true);
-        for (String artist in response["response"]["albums"]["items"]) {
-          results["albums"].add(Album.fromJson(jsonDecode(artist)));
-        }
+      if (response["response"]["tracks"] != null) {
+        results["response"].update("tracks", (value) => createTracksFromJsonData(response["response"]["tracks"]["items"]));
       }
-      if (response["tracks"] != null) {
-        results["tracks"] = List<Track>.empty(growable: true);
-        for (String artist in response["response"]["tracks"]["items"]) {
-          results["tracks"].add(Track.fromJson(jsonDecode(artist)));
-        }
+      if (response["response"]["artists"] != null) {
+        results["response"].update("artists", (value) => createArtistsFromJsonData(response["response"]["artists"]["items"]));
       }
     } else {
       results["error"] = response["error"];
+    }
+    return results;
+  }
+
+  List<Artist> createArtistsFromJsonData(items) {
+    List<Artist> results = List<Artist>.empty(growable: true);
+    if(items != null){
+      for (var item in items) {
+        results.add(Artist.fromJson(item));
+      }
+    }
+    return results;
+  }
+
+  List<Album> createAlbumsFromJsonData(items) {
+    List<Album> results = List<Album>.empty(growable: true);
+    if(items != null){
+      for (var item in items) {
+        results.add(Album.fromJson(item));
+      }
+    }
+    return results;
+  }
+
+  List<Track> createTracksFromJsonData(items) {
+    List<Track> results = List<Track>.empty(growable: true);
+    if(items != null){
+      for (var item in items) {
+        results.add(Track.fromJson(item));
+      }
     }
     return results;
   }
@@ -62,28 +84,19 @@ class Repository {
       final artistTracksResponse =
           await spotifyService.fetchData("artists", id, "top-tracks");
       if (artistAlbumsResponse["response"] != null) {
-        results["albums"] = List<Album>.empty(growable: true);
-        for (String album in artistAlbumsResponse["response"]["items"]) {
-          results["albums"].add(Album.fromJson(jsonDecode(album)));
-        }
+        results["albums"] = createAlbumsFromJsonData(artistAlbumsResponse["response"]["items"]);
       } else {
         results["error"] =
             "${results["error"] ?? ""} ${artistAlbumsResponse["error"]}";
       }
       if (artistArtistsResponse["response"] != null) {
-        results["artists"] = List<Artist>.empty(growable: true);
-        for (String artist in artistArtistsResponse["response"]["items"]) {
-          results["artists"].add(Artist.fromJson(jsonDecode(artist)));
-        }
+        results["artists"] = createArtistsFromJsonData(artistArtistsResponse["response"]["items"]);
       } else {
         results["error"] =
             "${results["error"] ?? ""} ${artistArtistsResponse["error"]}";
       }
       if (artistTracksResponse["response"] != null) {
-        results["tracks"] = List<Track>.empty(growable: true);
-        for (String track in artistTracksResponse["response"]["items"]) {
-          results["tracks"].add(Track.fromJson(jsonDecode(track)));
-        }
+        results["tracks"] = createTracksFromJsonData(artistTracksResponse["response"]["items"]);
       } else {
         results["error"] =
             "${results["error"] ?? ""} ${artistTracksResponse["error"]}";
@@ -104,14 +117,10 @@ class Repository {
     final albumResponse = await spotifyService.fetchData("albums", id, null);
     if (albumResponse["response"] != null) {
       results["album"] = Album.fromJson(albumResponse["response"]);
-      results["tracks"] = List<Track>.empty(growable: true);
-      for (String track in albumResponse["response"]["tracks"]["items"]) {
-        results["tracks"].add(Track.fromJson(jsonDecode(track)));
-      }
+      results["tracks"] = createTracksFromJsonData(albumResponse["response"]["tracks"]["items"]);
       results["artists"] = List<Artist>.empty(growable: true);
-      for (String artist in albumResponse["response"]["artists"]["items"]) {
-        final response = await spotifyService.fetchData("artists",
-            albumResponse["response"]["artists"]["items"][artist]["id"], null);
+      for (Map<String, dynamic> artist in albumResponse["response"]["artists"]["items"]) {
+        final response = await spotifyService.fetchData("artists", artist["id"], null);
         if (response["response"] != null) {
           results["artists"].add(Artist.fromJson(response["response"]));
         } else {
@@ -135,8 +144,8 @@ class Repository {
     if (trackResponse["response"] != null) {
       results["track"] = Track.fromJson(trackResponse["response"]);
       results["artists"] = List<Artist>.empty(growable: true);
-      for (String artist in trackResponse["response"]["artists"]) {
-        results["artists"].add(Artist.fromJson(jsonDecode(artist)));
+      for (Map<String, dynamic> artist in trackResponse["response"]["artists"]) {
+        results["artists"].add(Artist.fromJson(artist));
       }
       results["album"] = Album.fromJson(trackResponse["response"]["album"]);
     } else {

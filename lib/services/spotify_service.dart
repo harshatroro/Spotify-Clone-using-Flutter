@@ -27,16 +27,21 @@ class SpotifyService {
 
   Future<bool> fetchAccessToken() async {
     try {
-      await dotenv.load(fileName: ".env");
+      await dotenv.load(fileName: "lib/.env");
       final String clientId = dotenv.env['CLIENT_ID']!;
       final String clientSecret = dotenv.env['CLIENT_SECRET']!;
-      final response = await dio.get(
+      final response = await dio.post(
         accessTokenUrl,
         data: {
           "grant_type": "client_credentials",
           "client_id": clientId,
           "client_secret": clientSecret,
         },
+        options: Options(
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        ),
       );
       accessToken = response.data["access_token"];
       dio.interceptors.add(
@@ -57,12 +62,12 @@ class SpotifyService {
   Future<Map<String, dynamic>> search(String query) async {
     Map<String, dynamic> results = <String, dynamic>{"response": null, "error": null};
     try {
-      const url = searchUrl;
       final response = await dio.get(
-        url,
-        data: {
-          "q": Uri.parse(query),
+        searchUrl,
+        queryParameters: {
+          "q": query,
           "type": "artist,album,track",
+          "limit": 10,
         },
       );
       results.update("response", (value) => response.data);
