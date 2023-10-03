@@ -92,7 +92,12 @@ class SpotifyService {
     Map<String, dynamic> results = <String, dynamic>{"response": null, "error": null};
     try {
       final url = buildUrl(type, id, request);
-      final response = await dio.get(url);
+      final response = await dio.get(
+        url,
+        queryParameters: (request == "top-tracks" || request == "tracks") ? {
+          "market": "IN",
+        } : null,
+      );
       results.update("response", (value) => response.data);
     } on DioException catch(e) {
       debugPrint(e.toString());

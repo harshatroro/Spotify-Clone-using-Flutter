@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotify_clone/repository/repository.dart';
@@ -30,30 +29,22 @@ final idProvider = StateProvider<String>(
     (ref) => "",
 );
 
-final searchProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final searchProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, query) async {
   final repository = ref.read(repositoryProvider);
-  return await repository.search(
-    ref.watch(queryProvider.notifier).state,
-  );
+  return await repository.search(query);
 });
 
-final artistDetailsProvider = Future<Map<String, dynamic>>((ref) async {
+final artistDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   final repository = ref.read(repositoryProvider);
-  return await repository.artistDetails(
-    ref.watch(idProvider.notifier).state,
-  );
-} as FutureOr<Map<String, dynamic>> Function());
+  return await repository.artistDetails(id);
+});
 
-final albumDetailsProvider = Future<Map<String, dynamic>>((ref) async {
+final albumDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   final repository = ref.read(repositoryProvider);
-  return await repository.albumDetails(
-    ref.watch(idProvider.notifier).state,
-  );
-} as FutureOr<Map<String, dynamic>> Function());
+  return await repository.albumDetails(id);
+});
 
-final trackDetailsProvider = Future<Map<String, dynamic>>((ref) async {
+final trackDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   final repository = ref.read(repositoryProvider);
-  return await repository.trackDetails(
-    ref.watch(idProvider.notifier).state,
-  );
-} as FutureOr<Map<String, dynamic>> Function());
+  return await repository.trackDetails(id);
+});

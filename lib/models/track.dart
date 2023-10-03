@@ -1,14 +1,25 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotify_clone/models/album.dart';
 import 'package:spotify_clone/models/artist.dart';
+import 'package:spotify_clone/models/parent.dart';
+import 'package:spotify_clone/providers.dart';
 
-class Track {
-  Album album;
+class Track implements Parent {
+  Album? album;
   List<Artist> artists;
   int durationMs;
+  @override
   String id;
+  @override
   String imageUrl;
+  @override
   String name;
+  @override
   String type;
+  @override
+  final FutureProviderFamily<Map<String, dynamic>, String> provider = trackDetailsProvider;
+  @override
+  final String description;
 
   Track({
     required this.album,
@@ -18,16 +29,18 @@ class Track {
     required this.imageUrl,
     required this.name,
     required this.type,
+    required this.description,
   });
 
   Track.fromJson(Map<String, dynamic> json)
-  : album = Album.fromJson(json["album"]),
+  : album = json.containsKey("album") ? Album.fromJson(json["album"]) : null,
     artists = List<Artist>.from(json["artists"].map((x) => Artist.fromJson(x))),
     durationMs = json["duration_ms"],
     id = json["id"],
-    imageUrl = json["album"]["images"][0]["url"],
-    name = json["name"],
-    type = "Track";
+    imageUrl = json.containsKey("album") ? json["album"]["images"][0]["url"] : "",
+    name = json.containsKey("name") ? json["name"] : "",
+    type = "Track",
+    description = "${json["artists"][0]["name"]}";
 
   Map<String, dynamic> toJson() => {
     "album": album,

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spotify_clone/models/parent.dart';
+import 'package:spotify_clone/providers.dart';
+import 'package:spotify_clone/screens/intermediate_screen.dart';
 
 class ResultScreenWidget extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
@@ -11,8 +14,8 @@ class ResultScreenWidget extends ConsumerStatefulWidget {
 
 class _ResultScreenWidgetState extends ConsumerState<ResultScreenWidget> {
   String type = "All";
-  List data = List.empty(growable: true);
-  List filteredData = List.empty(growable: true);
+  List<Parent> data = List.empty(growable: true);
+  List<Parent> filteredData = List.empty(growable: true);
 
   @override
   void initState() {
@@ -24,7 +27,7 @@ class _ResultScreenWidgetState extends ConsumerState<ResultScreenWidget> {
   }
 
   void filterData(String newSelectedType) {
-    List newFilteredData = List.empty(growable: true);
+    List<Parent> newFilteredData = List.empty(growable: true);
     if(newSelectedType == "All") {
       newFilteredData = data;
     } else {
@@ -93,9 +96,23 @@ class _ResultScreenWidgetState extends ConsumerState<ResultScreenWidget> {
                     children: filteredData.map((e) => ListTile(
                       title: Text(e.name),
                       subtitle: Text(e.type),
-                      leading: Image.network(e.imageUrl),
+                      leading: Image.network(
+                        e.imageUrl ?? "",
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
                       onTap: () {
-
+                        ref.read(idProvider.notifier).state = e.id;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                              IntermediateScreen(
+                                object: e,
+                            ),
+                          ),
+                        );
                       },
                     )).toList(),
                   ),

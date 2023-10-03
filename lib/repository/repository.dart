@@ -77,29 +77,23 @@ class Repository {
     final artistResponse = await spotifyService.fetchData("artists", id, null);
     if (artistResponse["response"] != null) {
       results["artist"] = Artist.fromJson(artistResponse["response"]);
-      final artistAlbumsResponse =
-          await spotifyService.fetchData("artists", id, "albums");
-      final artistArtistsResponse =
-          await spotifyService.fetchData("artists", id, "related-artists");
-      final artistTracksResponse =
-          await spotifyService.fetchData("artists", id, "top-tracks");
+      final artistArtistsResponse = await spotifyService.fetchData("artists", id, "related-artists");
+      final artistAlbumsResponse = await spotifyService.fetchData("artists", id, "albums");
+      final artistTracksResponse = await spotifyService.fetchData("artists", id, "top-tracks");
       if (artistAlbumsResponse["response"] != null) {
         results["albums"] = createAlbumsFromJsonData(artistAlbumsResponse["response"]["items"]);
       } else {
-        results["error"] =
-            "${results["error"] ?? ""} ${artistAlbumsResponse["error"]}";
+        results["error"] = "${results["error"] ?? ""} ${artistAlbumsResponse["error"]}";
       }
       if (artistArtistsResponse["response"] != null) {
-        results["artists"] = createArtistsFromJsonData(artistArtistsResponse["response"]["items"]);
+        results["artists"] = createArtistsFromJsonData(artistArtistsResponse["response"]["artists"]);
       } else {
-        results["error"] =
-            "${results["error"] ?? ""} ${artistArtistsResponse["error"]}";
+        results["error"] = "${results["error"] ?? ""} ${artistArtistsResponse["error"]}";
       }
       if (artistTracksResponse["response"] != null) {
-        results["tracks"] = createTracksFromJsonData(artistTracksResponse["response"]["items"]);
+        results["tracks"] = createTracksFromJsonData(artistTracksResponse["response"]["tracks"]);
       } else {
-        results["error"] =
-            "${results["error"] ?? ""} ${artistTracksResponse["error"]}";
+        results["error"] = "${results["error"] ?? ""} ${artistTracksResponse["error"]}";
       }
     } else {
       results["error"] = artistResponse["error"];
@@ -110,16 +104,24 @@ class Repository {
   Future<Map<String, dynamic>> albumDetails(String id) async {
     Map<String, dynamic> results = <String, dynamic>{
       "album": null,
-      "artists": null,
-      "tracks": null,
+      "albums": List<Album>.empty(growable: true),
+      "artists": List<Artist>.empty(growable: true),
+      "tracks": List<Track>.empty(growable: true),
       "error": null,
     };
     final albumResponse = await spotifyService.fetchData("albums", id, null);
     if (albumResponse["response"] != null) {
       results["album"] = Album.fromJson(albumResponse["response"]);
-      results["tracks"] = createTracksFromJsonData(albumResponse["response"]["tracks"]["items"]);
-      results["artists"] = List<Artist>.empty(growable: true);
-      for (Map<String, dynamic> artist in albumResponse["response"]["artists"]["items"]) {
+      results["albums"].add(results["album"]);
+      for (Map<String, dynamic> track in albumResponse["response"]["tracks"]["items"]) {
+        final response = await spotifyService.fetchData("tracks", track["id"], null);
+        if (response["response"] != null) {
+          results["tracks"].add(Track.fromJson(response["response"]));
+        } else {
+          results["error"] = "${results["error"] ?? ""} ${response["error"]}";
+        }
+      }
+      for (Map<String, dynamic> artist in albumResponse["response"]["artists"]) {
         final response = await spotifyService.fetchData("artists", artist["id"], null);
         if (response["response"] != null) {
           results["artists"].add(Artist.fromJson(response["response"]));
@@ -136,18 +138,24 @@ class Repository {
   Future<Map<String, dynamic>> trackDetails(String id) async {
     Map<String, dynamic> results = <String, dynamic>{
       "track": null,
-      "album": null,
-      "artists": null,
+      "tracks": List<Track>.empty(growable: true),
+      "albums": List<Album>.empty(growable: true),
+      "artists": List<Artist>.empty(growable: true),
       "error": null,
     };
     final trackResponse = await spotifyService.fetchData("tracks", id, null);
     if (trackResponse["response"] != null) {
       results["track"] = Track.fromJson(trackResponse["response"]);
-      results["artists"] = List<Artist>.empty(growable: true);
+      results["tracks"].add(results["track"]);
+      results["albums"].add(Album.fromJson(trackResponse["response"]["album"]));
       for (Map<String, dynamic> artist in trackResponse["response"]["artists"]) {
-        results["artists"].add(Artist.fromJson(artist));
+        final response = await spotifyService.fetchData("artists", artist["id"], null);
+        if (response["response"] != null) {
+          results["artists"].add(Artist.fromJson(response["response"]));
+        } else {
+          results["error"] = "${results["error"] ?? ""} ${response["error"]}";
+        }
       }
-      results["album"] = Album.fromJson(trackResponse["response"]["album"]);
     } else {
       results["error"] = trackResponse["error"];
     }

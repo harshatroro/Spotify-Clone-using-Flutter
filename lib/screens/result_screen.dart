@@ -8,7 +8,8 @@ class ResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchResults = ref.watch(searchProvider);
+    final query = ref.watch(queryProvider);
+    final searchResults = ref.watch(searchProvider(query));
     return searchResults.when(
       data: (data) {
         if(data["response"] != null){
