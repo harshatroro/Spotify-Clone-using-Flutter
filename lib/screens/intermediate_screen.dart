@@ -5,6 +5,7 @@ import 'package:spotify_clone/providers.dart';
 import 'package:spotify_clone/screens/album_screen.dart';
 import 'package:spotify_clone/screens/artist_screen.dart';
 import 'package:spotify_clone/screens/track_screen.dart';
+import 'package:spotify_clone/widgets/loading.dart';
 
 class IntermediateScreen extends ConsumerWidget {
   final Parent object;
@@ -25,34 +26,14 @@ class IntermediateScreen extends ConsumerWidget {
             case "Artist": return ArtistScreen(data: data);
             case "Album": return AlbumScreen(data: data);
             case "Track": return TrackScreen(data: data);
-            default: return const Scaffold(
-              body: Center(
-                child: Text("Error"),
-              ),
-            );
+            default: return ErrorWidget("Error");
           }
         } else {
-          return Scaffold(
-            body: Center(
-              child: Text(data["error"]),
-            ),
-          );
+          return ErrorWidget(data["error"]);
         }
       },
-      error: (error, stackTrace) {
-        return Scaffold(
-          body: Center(
-            child: Text(error.toString()),
-          ),
-        );
-      },
-      loading: () {
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+      error: (error, stackTrace) => ErrorWidget(error.toString()),
+      loading: () => const LoadingWidget(),
     );
   }
 }

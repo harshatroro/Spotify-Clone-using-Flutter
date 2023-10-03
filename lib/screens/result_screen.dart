@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotify_clone/providers.dart';
 import 'package:spotify_clone/screens/result_screen_widget.dart';
+import 'package:spotify_clone/widgets/loading.dart';
 
 class ResultScreen extends ConsumerWidget {
   const ResultScreen({super.key});
@@ -17,31 +18,11 @@ class ResultScreen extends ConsumerWidget {
             data: data["response"],
           );
         } else {
-          return Scaffold(
-            body: Center(
-              child: Text(
-                  data["error"]
-              ),
-            ),
-          );
+          return ErrorWidget(data["error"]);
         }
       },
-      error: (error, stackTrace) {
-        return Scaffold(
-          body: Center(
-            child: Text(
-                error.toString()
-            ),
-          ),
-        );
-      },
-      loading: () {
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
+      error: (error, stackTrace) => ErrorWidget(error.toString()),
+      loading: () => const LoadingWidget(),
     );
   }
 }

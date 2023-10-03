@@ -1,8 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotify_clone/models/parent.dart';
 import 'package:spotify_clone/providers.dart';
 import 'package:spotify_clone/screens/intermediate_screen.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:spotify_clone/widgets/no_internet_dialog.dart';
 
 class ResultScreenWidget extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
@@ -37,6 +41,36 @@ class _ResultScreenWidgetState extends ConsumerState<ResultScreenWidget> {
       type = newSelectedType;
       filteredData = newFilteredData;
     });
+  }
+
+  Future<bool> connected() async {
+    final connection = await Connectivity().checkConnectivity();
+    if(connection == ConnectivityResult.none) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  void checkConnection(BuildContext context, WidgetRef ref, Parent e) async {
+    bool connection = await connected();
+    if(connection) {
+      ref.read(idProvider.notifier).state = e.id;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              IntermediateScreen(
+                object: e,
+              ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => const NoInternetDialog(),
+      );
+    }
   }
 
   @override
@@ -103,16 +137,7 @@ class _ResultScreenWidgetState extends ConsumerState<ResultScreenWidget> {
                         fit: BoxFit.cover,
                       ),
                       onTap: () {
-                        ref.read(idProvider.notifier).state = e.id;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                              IntermediateScreen(
-                                object: e,
-                            ),
-                          ),
-                        );
+                        checkConnection(context, ref, e);
                       },
                     )).toList(),
                   ),
