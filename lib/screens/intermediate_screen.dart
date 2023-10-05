@@ -5,6 +5,7 @@ import 'package:spotify_clone/providers.dart';
 import 'package:spotify_clone/screens/album_screen.dart';
 import 'package:spotify_clone/screens/artist_screen.dart';
 import 'package:spotify_clone/screens/track_screen.dart';
+import 'package:spotify_clone/widgets/error.dart';
 import 'package:spotify_clone/widgets/loading.dart';
 
 class IntermediateScreen extends ConsumerWidget {
@@ -26,13 +27,13 @@ class IntermediateScreen extends ConsumerWidget {
             case "Artist": return ArtistScreen(data: data);
             case "Album": return AlbumScreen(data: data);
             case "Track": return TrackScreen(data: data);
-            default: return ErrorWidget("Error");
+            default: return const CustomErrorWidget(error: "Error");
           }
         } else {
-          return ErrorWidget(data["error"]);
+          return CustomErrorWidget(error: data["error"]);
         }
       },
-      error: (error, stackTrace) => ErrorWidget(error.toString()),
+      error: (error, stackTrace) => CustomErrorWidget(error: error.toString()),
       loading: () => const LoadingWidget(),
     );
   }

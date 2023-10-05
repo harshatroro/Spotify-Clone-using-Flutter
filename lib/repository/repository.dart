@@ -22,16 +22,55 @@ class Repository {
     final response = await spotifyService.search(query);
     if (response["response"] != null) {
       if (response["response"]["albums"] != null) {
-        results["response"].update("albums", (value) => createAlbumsFromJsonData(response["response"]["albums"]["items"]));
+        for(var item in response["response"]["albums"]["items"]) {
+          final albumResponse = await spotifyService.fetchData("albums", item["id"], null);
+          if (albumResponse["response"] != null) {
+            for(var artist in albumResponse["response"]["artists"]) {
+              if(!artist.containsKey("images")) {
+                artist.putIfAbsent("images", () => [{"url": "https://placehold.co/640x640?text=No+Image", "height": 640, "width": 640}]);
+              }
+            }
+            results["response"]["albums"].add(Album.fromJson(albumResponse["response"]));
+          } else {
+            results["error"] = "${results["error"] ?? ""} ${albumResponse["error"]}";
+          }
+        }
       }
       if (response["response"]["tracks"] != null) {
-        results["response"].update("tracks", (value) => createTracksFromJsonData(response["response"]["tracks"]["items"]));
+        for(var item in response["response"]["tracks"]["items"]) {
+          final trackResponse = await spotifyService.fetchData("tracks", item["id"], null);
+          if (trackResponse["response"] != null) {
+            for(var artist in trackResponse["response"]["album"]["artists"]) {
+              if(!artist.containsKey("images")) {
+                artist.putIfAbsent("images", () => [{"url": "https://placehold.co/640x640?text=No+Image", "height": 640, "width": 640}]);
+              }
+            }
+            for(var artist in trackResponse["response"]["artists"]) {
+              if(!artist.containsKey("images")) {
+                artist.putIfAbsent("images", () => [{"url": "https://placehold.co/640x640?text=No+Image", "height": 640, "width": 640}]);
+              }
+            }
+            results["response"]["tracks"].add(Track.fromJson(trackResponse["response"]));
+          } else {
+            results["error"] = "${results["error"] ?? ""} ${trackResponse["error"]}";
+          }
+        }
       }
       if (response["response"]["artists"] != null) {
-        results["response"].update("artists", (value) => createArtistsFromJsonData(response["response"]["artists"]["items"]));
+        for(var item in response["response"]["artists"]["items"]) {
+          final artistResponse = await spotifyService.fetchData("artists", item["id"], null);
+          if (artistResponse["response"] != null) {
+            if(!artistResponse["response"].containsKey("images")) {
+              artistResponse.putIfAbsent("images", () => [{"url": "https://placehold.co/640x640?text=No+Image", "height": 640, "width": 640}]);
+            }
+            results["response"]["artists"].add(Artist.fromJson(artistResponse["response"]));
+          } else {
+            results["error"] = "${results["error"] ?? ""} ${artistResponse["error"]}";
+          }
+        }
       }
     } else {
-      results["error"] = response["error"];
+      results.update("error", (value) => response["error"]);
     }
     return results;
   }

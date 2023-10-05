@@ -25,8 +25,8 @@ class Artist implements Parent {
   });
 
   Artist.fromJson(Map<String, dynamic> json)
-    : id = json["id"] ?? "",
-      imageUrl = json["images"]?[0]?["url"],
+    : id = json["id"],
+      imageUrl = json.containsKey("images") ? json["images"][0]["url"] : "https://placehold.co/640x640?text=Hello\nWorld",
       name = json["name"] ?? "",
       type = "Artist",
       description = "Artist";

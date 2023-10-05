@@ -67,7 +67,7 @@ class SpotifyService {
         queryParameters: {
           "q": query,
           "type": "artist,album,track",
-          "limit": 10,
+          "limit": 5,
         },
       );
       results.update("response", (value) => response.data);

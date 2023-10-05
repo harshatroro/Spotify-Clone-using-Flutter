@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotify_clone/providers.dart';
 import 'package:spotify_clone/screens/result_screen_widget.dart';
+import 'package:spotify_clone/widgets/error.dart';
 import 'package:spotify_clone/widgets/loading.dart';
 
 class ResultScreen extends ConsumerWidget {
@@ -18,10 +19,10 @@ class ResultScreen extends ConsumerWidget {
             data: data["response"],
           );
         } else {
-          return ErrorWidget(data["error"]);
+          return CustomErrorWidget(error: data["error"]);
         }
       },
-      error: (error, stackTrace) => ErrorWidget(error.toString()),
+      error: (error, stackTrace) => CustomErrorWidget(error: error.toString(), stackTrace: stackTrace),
       loading: () => const LoadingWidget(),
     );
   }
